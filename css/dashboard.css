@@ -1,1 +1,139 @@
+/* dashboard.css */
+
+/* Sidebar for dashboards */
+.sidebar {
+  width: 220px;
+  background: white;
+  height: calc(100vh - 60px);
+  padding: 20px;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: #555;
+  font-weight: 600;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px 10px;
+  margin-bottom: 10px;
+  color: #333;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.sidebar a:hover {
+  background: #0055cc;
+  color: white;
+}
+
+/* Main dashboard content section */
+.dashboard-content {
+  margin-left: 240px;
+  padding: 40px;
+  background: #f5f7fa;
+  min-height: calc(100vh - 60px);
+  color: #333;
+}
+
+/* Top Navbar */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  background: #0055cc;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.header h1 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+/* Card styles common in dashboards */
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+/* Tables in dashboard */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f4f8;
+  font-weight: 700;
+}
+
+tr:hover {
+  background-color: #e6f0ff;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  background: #0055cc;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #0041aa;
+}
+
+/* Responsive adjustments */
+@media(max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    box-shadow: none;
+    padding: 15px;
+  }
+  .dashboard-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+  .header {
+    flex-direction: column;
+    height: auto;
+    padding: 15px;
+  }
+}
 
