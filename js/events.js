@@ -4,43 +4,41 @@ import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/fireba
 async function loadEvents() {
   const container = document.getElementById('eventContainer');
   if(!container) return;
+  
   container.innerHTML = '';
 
   const snapshot = await getDocs(collection(db, 'events'));
-  if(snapshot.empty){
-    container.innerHTML = '<p>No events found.</p>';
+  if(snapshot.empty) {
+    container.innerHTML = '<p>No events available.</p>';
     return;
   }
+
   snapshot.forEach(eventDoc => {
     const data = eventDoc.data();
     const card = document.createElement('div');
     card.classList.add('event-card');
     card.innerHTML = `
       <h3>${data.name}</h3>
-      <p><strong>Date:</strong> ${data.date}</p>
-      <p><strong>Venue:</strong> ${data.venue}</p>
+      <p>Date: ${data.date}</p>
+      <p>Venue: ${data.venue}</p>
       <button>Register</button>
     `;
-    const btn = card.querySelector('button');
-    btn.addEventListener('click', async () => {
+    
+    card.querySelector('button').addEventListener('click', async () => {
       const user = auth.currentUser;
       if(!user) {
-        alert("Please login first!");
+        alert('Please login to register.');
         window.location.href = 'login.html';
         return;
       }
-      // Save registration in Firestore under user-events collection or registrations
-      const regRef = doc(db, 'registrations', `${user.uid}_${eventDoc.id}`);
-      await setDoc(regRef, {
-        userId: user.uid,
-        eventId: eventDoc.id,
-        registeredAt: new Date()
-      });
-      alert('Registered successfully!');
+
+      const registrationRef = doc(db, 'registrations', `${user.uid}_${eventDoc.id}`);
+      await setDoc(registrationRef, { userId: user.uid, eventId: eventDoc.id, registeredAt: new Date() });
+      alert('Successfully registered for the event!');
     });
+
     container.appendChild(card);
   });
 }
 
 window.addEventListener('load', loadEvents);
-
