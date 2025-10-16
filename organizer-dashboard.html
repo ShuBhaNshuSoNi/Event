@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet" />
 <style>
   body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #333; margin: 0; }
-  header { background:#0055cc; padding: 15px 40px; color:#fff; display: flex; justify-content: space-between; align-items: center;}
+  header { background:#0055cc; padding: 15px 40px; color:#fff; display: flex; justify-content: space-between; align-items: center; }
   h1 { margin: 0; }
   nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 600; }
   nav a:hover { text-decoration: underline; }
@@ -27,14 +27,14 @@
 
 <section id="myEvents">
   <h2>My Events</h2>
-  <!-- Events created by this organizer will display here -->
+  <!-- Organizer events loaded here -->
 </section>
 
 <script type="module">
 import { db, auth } from './js/firebase-config.js';
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const myEventsEl = document.getElementById('myEvents');
+const myEventsSection = document.getElementById('myEvents');
 
 async function loadMyEvents() {
   const user = auth.currentUser;
@@ -44,12 +44,12 @@ async function loadMyEvents() {
   }
   const q = query(collection(db, 'events'), where('createdBy', '==', user.uid));
   const querySnapshot = await getDocs(q);
-  if(querySnapshot.empty){
-    myEventsEl.innerHTML += '<p>No events created yet.</p>';
+  if (querySnapshot.empty){
+    myEventsSection.innerHTML += '<p>No events created yet.</p>';
   } else {
     querySnapshot.forEach(doc => {
       let ev = doc.data();
-      myEventsEl.innerHTML += `
+      myEventsSection.innerHTML += `
         <div class="event">
           <h3>${ev.name}</h3>
           <p>Date: ${ev.date}</p>
@@ -62,13 +62,9 @@ async function loadMyEvents() {
 }
 
 auth.onAuthStateChanged(user => {
-  if(user) {
-    loadMyEvents();
-  } else {
-    location.href = 'login.html';
-  }
+  if(user) loadMyEvents();
+  else location.href = 'login.html';
 });
 </script>
 </body>
 </html>
-
