@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Organizer Dashboard - College Event Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #333; margin: 0; }
+  header { background:#0055cc; padding: 15px 40px; color:#fff; display: flex; justify-content: space-between; align-items: center;}
+  h1 { margin: 0; }
+  nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 600; }
+  nav a:hover { text-decoration: underline; }
+  #myEvents { max-width: 900px; margin: 40px auto; }
+  .event { background: white; padding: 20px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+  .event h3 { margin-top: 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Organizer Dashboard</h1>
+  <nav>
+    <a href="create-event.html">Create Event</a>
+    <a href="profile.html">Profile</a>
+    <a href="login.html">Logout</a>
+  </nav>
+</header>
+
+<section id="myEvents">
+  <h2>My Events</h2>
+  <!-- Events created by this organizer will display here -->
+</section>
+
+<script type="module">
+import { db, auth } from './js/firebase-config.js';
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const myEventsEl = document.getElementById('myEvents');
+
+async function loadMyEvents() {
+  const user = auth.currentUser;
+  if (!user) {
+    location.href = 'login.html';
+    return;
+  }
+  const q = query(collection(db, 'events'), where('createdBy', '==', user.uid));
+  const querySnapshot = await getDocs(q);
+  if(querySnapshot.empty){
+    myEventsEl.innerHTML += '<p>No events created yet.</p>';
+  } else {
+    querySnapshot.forEach(doc => {
+      let ev = doc.data();
+      myEventsEl.innerHTML += `
+        <div class="event">
+          <h3>${ev.name}</h3>
+          <p>Date: ${ev.date}</p>
+          <p>Venue: ${ev.venue}</p>
+          <p>${ev.description}</p>
+        </div>
+      `;
+    });
+  }
+}
+
+auth.onAuthStateChanged(user => {
+  if(user) {
+    loadMyEvents();
+  } else {
+    location.href = 'login.html';
+  }
+});
+</script>
+</body>
+</html>
 
