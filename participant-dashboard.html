@@ -1,17 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Participant Dashboard - College Event Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet" />
 <style>
-  body { font-family: 'Poppins', sans-serif; background: #f5f7fa; margin: 0; color: #333; }
-  header { background:#0055cc; padding: 15px 40px; color:#fff; }
-  nav a { color: white; margin-left: 20px; text-decoration: none; font-weight: 600; }
-  nav a:hover { text-decoration: underline; }
-  #registeredEvents { max-width: 900px; margin: 40px auto; }
-  .event { background: white; padding: 20px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-  canvas { margin-top: 10px; border: 1px solid #ddd; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    color: #333;
+  }
+  header {
+    background:#0055cc;
+    padding: 15px 40px;
+    color:#fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  nav a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  nav a:hover {
+    text-decoration: underline;
+    color: #ffdd57;
+  }
+  #registeredEvents {
+    max-width: 900px;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .event {
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  .event h3 {
+    margin-top: 0;
+  }
+  canvas {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -25,55 +67,66 @@
 </header>
 
 <section id="registeredEvents">
-  <h2>Registered Events</h2>
-  <!-- Registered events with QR codes will appear here -->
+  <h2>My Registered Events</h2>
+  <!-- Registered events will be dynamically loaded here -->
 </section>
 
 <script type="module">
 import { db, auth } from './js/firebase-config.js';
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { generateQRCode } from './js/qr.js';
 
-const section = document.getElementById('registeredEvents');
+const registeredEventsSection = document.getElementById('registeredEvents');
 
-async function loadRegisteredEvents(){
+async function loadRegisteredEvents() {
   const user = auth.currentUser;
-  if(!user){
+  if(!user) {
     location.href = 'login.html';
     return;
   }
 
-  const q = query(collection(db, 'registrations'), where('userId', '==', user.uid));
-  const regs = await getDocs(q);
+  const registrationsQuery = query(collection(db, 'registrations'), where('userId', '==', user.uid));
+  const registrations = await getDocs(registrationsQuery);
 
-  if(regs.empty){
-    section.innerHTML += '<p>You have no registered events yet.</p>';
-  } else {
-    for(const doc of regs.docs){
-      const regData = doc.data();
-      // Fetch event info
-      const eventDoc = await db.collection('events').doc(regData.eventId).get();
-      const ev = eventDoc.data();
+  if (registrations.empty) {
+    registeredEventsSection.innerHTML += '<p>You have no registered events yet.</p>';
+    return;
+  }
 
-      const div = document.createElement('div');
-      div.className = 'event';
-      div.innerHTML = `<h3>${ev.name}</h3><p>Date: ${ev.date}</p><p>Venue: ${ev.venue}</p>`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.id = `qr${doc.id}`;
-      div.appendChild(canvas);
+  for (const regDoc of registrations.docs) {
+    const regData = regDoc.data();
+    const eventRef = doc(db, 'events', regData.eventId);
+    const eventSnap = await getDoc(eventRef);
 
-      section.appendChild(div);
-      generateQRCode(ev.name, user.uid, canvas.id);
+    if(eventSnap.exists()) {
+      const eventData = eventSnap.data();
+
+      const eventDiv = document.createElement('div');
+      eventDiv.className = 'event';
+
+      const htmlContent = `
+        <h3>${eventData.name}</h3>
+        <p><strong>Date:</strong> ${eventData.date}</p>
+        <p><strong>Venue:</strong> ${eventData.venue}</p>
+        <canvas id="qrCanvas_${regDoc.id}" width="200" height="200"></canvas>
+      `;
+
+      eventDiv.innerHTML = htmlContent;
+      registeredEventsSection.appendChild(eventDiv);
+
+      // Generate QR code for this event + user id
+      generateQRCode(eventData.name, user.uid, `qrCanvas_${regDoc.id}`);
     }
   }
 }
 
 auth.onAuthStateChanged(user => {
-  if(user) loadRegisteredEvents();
-  else location.href = 'login.html';
+  if(user) {
+    loadRegisteredEvents();
+  } else {
+    location.href = 'login.html';
+  }
 });
 </script>
 </body>
 </html>
-
